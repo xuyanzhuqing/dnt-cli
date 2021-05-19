@@ -17,6 +17,10 @@
   "bin": {
     "dnt-cli-create": "index.js"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://e.coding.net/vite-man/dnt-cli/dnt-cli.git"
+  },
   "dependencies": {
     "chalk": "^4.1.1"
   }
