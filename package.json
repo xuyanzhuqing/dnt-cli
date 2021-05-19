@@ -1,0 +1,23 @@
+{
+  "name": "dnt-cli",
+  "version": "1.0.1-0",
+  "description": "this is for dnt's frontend project cli",
+  "main": "index.js",
+  "keywords": [
+    "frontEnd",
+    "vue2.6",
+    "typescript",
+    "teamwork effective"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "michael",
+  "license": "ISC",
+  "bin": {
+    "dnt-cli-create": "index.js"
+  },
+  "dependencies": {
+    "chalk": "^4.1.1"
+  }
+}
