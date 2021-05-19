@@ -4,7 +4,7 @@ import Page from '&/components/biz/page.vue'
 
 @Component({
   name: '',
-  component: {}
+  components: {}
 })
 export default class extends Page {
   public dynamic: any = {}
@@ -21,3 +21,6 @@ export default class extends Page {
 }
 
 </script>
+<!-- scoped = "true" 将导致组建内部样式失效如需覆盖，请使用 /depp/ <selector> 代替 -->
+<style lang="scss">
+</style>
