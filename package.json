@@ -15,13 +15,19 @@
   "author": "michael",
   "license": "ISC",
   "bin": {
-    "dnt-cli-create": "index.js"
+    "dnt-cli": "index.js"
   },
   "repository": {
     "type": "git",
     "url": "https://e.coding.net/vite-man/dnt-cli/dnt-cli.git"
   },
   "dependencies": {
-    "chalk": "^4.1.1"
+    "chalk": "^4.1.1",
+    "commander": "^7.2.0",
+    "minimist": "^1.2.5",
+    "progress": "^2.0.3"
+  },
+  "engines": {
+    "node": ">=12.16.1"
   }
 }
