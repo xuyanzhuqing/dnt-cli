@@ -3,7 +3,7 @@ import { Component } from 'vue-property-decorator'
 import Page from '&/components/biz/page.vue'
 
 @Component({
-  name: '',
+  name: '#name#',
   components: {}
 })
 export default class extends Page {
