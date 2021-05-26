@@ -3,18 +3,16 @@ const observe = require("inquirer/lib/utils/events")
 const { map, takeUntil } = require("rxjs/operators")
 const cliCursor = require("cli-cursor")
 const chalk = require("chalk")
-const Table = require("cli-table")
+const { table } = require("table")
 const figures = require("figures")
 
 class InquirerTableInsertPrompt extends Base {
   constructor(questions, rl, answers) {
     super(questions, rl, answers);
-    const steps = this.answers.steps.replace(/\s/g, '').split(',')
+    const steps = new Array(parseInt(this.answers.steps)).fill(null).map((v, i) => i + 1)
     this.opt.columns = steps.map(v => ({ name: v, value: v }))
     this.columns = this.opt.columns
-    this.columns.realLength = this.columns.length
     this.rows = this.opt.rows
-    this.rows.realLength = this.rows.length
     this.values = this.initValue(this.rows)
     this.pointer = 0;
     this.horizontalPointer = 0;
@@ -97,7 +95,7 @@ class InquirerTableInsertPrompt extends Base {
   }
 
   onLeftKey() {
-    const length = this.columns.realLength;
+    const length = this.columns.length;
 
     this.horizontalPointer =
       this.horizontalPointer > 0 ? this.horizontalPointer - 1 : length - 1;
@@ -105,7 +103,7 @@ class InquirerTableInsertPrompt extends Base {
   }
 
   onRightKey() {
-    const length = this.columns.realLength;
+    const length = this.columns.length;
 
     this.horizontalPointer =
       this.horizontalPointer < length - 1 ? this.horizontalPointer + 1 : 0;
@@ -113,7 +111,7 @@ class InquirerTableInsertPrompt extends Base {
   }
 
   onDownKey() {
-    const length = this.rows.realLength;
+    const length = this.rows.length;
 
     this.pointer = this.pointer < length - 1 ? this.pointer + 1 : this.pointer;
     this.render();
@@ -139,8 +137,8 @@ class InquirerTableInsertPrompt extends Base {
     this.columns.forEach((v, i) => {
       const row = {}
       this.rows.forEach((m, k) => {
-        row[m.name] = this.values[k][i].join('')
-        row.name = v.value
+        row[m.name] = this.rows[k].type ? this.values[k][i] : this.values[k][i].join('')
+        // row.name = v.value
       })
       res.push(row)
     })
@@ -162,48 +160,16 @@ class InquirerTableInsertPrompt extends Base {
     this.render(state.isValid);
   }
 
-  paginate() {
-    const middleOfPage = Math.floor(this.pageSize / 2);
-    const firstIndex = Math.max(0, this.pointer - middleOfPage);
-    const lastIndex = Math.min(
-      firstIndex + this.pageSize - 1,
-      this.rows.realLength - 1
-    );
-    const lastPageOffset = this.pageSize - 1 - lastIndex + firstIndex;
-
-    return [Math.max(0, firstIndex - lastPageOffset), lastIndex];
-  }
-
   render(error) {
     let bottomContent = "";
     let message = this.getQuestion();
-    const [firstIndex, lastIndex] = this.paginate();
-    const table = new Table({
-      head: [
-        chalk.reset.dim(
-          `${firstIndex + 1}-${lastIndex + 1} of ${this.rows.length}`
-        )
-      ].concat(this.columns.map(v => v.name).map(name => chalk.reset.bold(name))),
-      chars: {
-        middle: ' ',
-        right: ' ',
-        left: ' ',
-        'mid-mid': '─',
-        'top-mid': '─',
-        'bottom-mid': '─',
-        'left-mid': ' ',
-        'right-mid': ' ',
-        'top-left': ' ',
-        'top-right': ' ',
-        'bottom-left': ' ',
-        'bottom-right': ' '
-      }
-    });
 
+    const thead = ['attributes/steps'].concat(this.columns.map(v => v.name))
+
+    const values = [ thead ]
+    const errorSet = new Set()
     this.rows.forEach((row, rowIndex) => {
-      if (rowIndex < firstIndex || rowIndex > lastIndex) return;
-
-      const columnValues = [];
+      const columnValues = [chalk.reset(row.name)];
 
       this.columns.forEach((column, columnIndex) => {
         const isSelected =
@@ -217,24 +183,34 @@ class InquirerTableInsertPrompt extends Base {
         } else {
           columnValues.push(isSelected ? `[${value}]` : `${value}`);
         }
+
+        if (row.validate && isSelected) {
+          if (typeof row.validate(value) === 'string') {
+            errorSet.add(row.validate(value))
+          }
+        }
       });
 
-      const chalkModifier =
-        this.status !== "answered" && this.pointer === rowIndex
-          ? chalk.reset.bold.cyan
-          : chalk.reset;
-
-      table.push({
-        [chalkModifier(row.name)]: columnValues
-      });
+      values.push(columnValues)
     });
 
-    message += "\n\n" + table.toString();
+    const instruction = chalk.gray([
+      '方向键 ← ↑ ↓ → 控制光标 [] 移动',
+      'del backspace 键支持从前后两个方向删除',
+      'space 键可用于控制选中与否',
+    ].map((v, i) => `${i + 1}. ${v}`).join('\n'))
+
+    message += ('\n' + instruction + "\n\n" + table(values).toString());
+    
+    if (errorSet.size > 0) {
+      error = error || '' + Array.from(errorSet).join('\n')
+    }
 
     if (error) {
       bottomContent = chalk.red(">> ") + error;
     }
-    this.screen.render(message, bottomContent);
+
+    this.screen.render(message,  bottomContent);
   }
 }
 

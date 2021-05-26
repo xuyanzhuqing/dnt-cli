@@ -1,4 +1,6 @@
 const Basic = require('./basic')
+const { hyphens } = require('../utils')
+const { validator, required, IntRange, filename } = require('../validator')
 
 class Step extends Basic {
   constructor (name, desc, note, prompt = []) {
@@ -8,6 +10,29 @@ class Step extends Basic {
 
   redirct ({ dest }) {
     return `${this.parentDir}/step/${dest}.vue`
+  }
+
+  replaceAll (data, opts) {
+    // 替换代码模板
+    const { submit, preview, next, ...rest } = opts
+
+    const selfReplace = (data, key, value) => {
+      const keepLine = `(.*)#${key}#(.*)`
+      const specLine = keepLine + '\n'
+      if (value) {
+        const reg = new RegExp(specLine, 'g')
+        return data.replace(new RegExp(keepLine), '').replace(reg, '')
+      } else {
+        const reg = new RegExp(`${specLine}(.|\n)+${specLine}`)
+        return data.replace(reg, '')
+      }
+    }
+
+    for (let opt in { submit, preview, next }) {
+      data = selfReplace(data, opt, opts[opt])
+    }
+
+    return super.replaceAll(data, opts)
   }
 
   get entry () {
@@ -22,9 +47,9 @@ class Process extends Basic {
       '向导组建',
       '须指定文件夹',
       [
-        { type: 'input', name: 'dest', message: '向导组建文件夹名称' },
-        { type: 'input', name: 'title', message: '向导组建别名' },
-        { type: 'input', name: 'steps', message: '请输入步骤名称<步骤间用逗号分隔>'},
+        { type: 'input', name: 'dest', message: '向导组建文件夹名称', validate: validator(required, filename) },
+        { type: 'input', name: 'title', message: '向导组建别名', validate: required },
+        { type: 'input', name: 'steps', message: '请输入步骤总数', validate: validator(required, IntRange({ min: 2 }))},
         {
           type: 'table',
           name: 'process',
@@ -32,26 +57,50 @@ class Process extends Basic {
           columns: [],
           rows: [
             {
-              name: 'label'
+              name: 'name',
+              validate: validator(required, filename)
             },
             {
-              name: 'isLink',
-              type: Boolean
+              name: 'title'
+            },
+            {
+              name: 'exit',
+              type: Boolean,
+              default: true
+            },
+            {
+              name: 'submit',
+              type: Boolean,
+              default: true
+            },
+            {
+              name: 'preview',
+              type: Boolean,
+              default: true
+            },
+            {
+              name: 'next',
+              type: Boolean,
+              default: true
+            },
+            {
+              name: 'disabled',
+              type: Boolean,
+              default: false
             }
           ]
         }
       ]
     )
-
-    this.stepInstances = []
   }
 
   static formatJsonString (data) {
-    return JSON.stringify(data, null, 2).replace(/\"(?=(\w+")?:)/g, '').replace(/(?<=:\s(\"\w+)?)\"/g, '\'')
+    return JSON.stringify(data, null, 2).replace(/\"/g, '\'').replace(/(\'+)(?=:)/g, '').replace(/(\'+)(?=\w+:)/g, '')
   }
 
   replaceAll (data, opts) {
     const requiredOpt = {
+      dest: opts.dest,
       import: [],
       steps: [],
       components: [],
@@ -59,16 +108,16 @@ class Process extends Basic {
       currentView: ''
     }
     opts.process.forEach(v => {
-      const name = v.name
-      requiredOpt.import.push(`import ${name} from './step/${name}.vue'`)
+      const hyname = hyphens(v.name)
+      requiredOpt.import.push(`import ${hyname} from './step/${v.name}.vue'`)
       requiredOpt.steps.push({
-        name: v.name,
-        title: v.label
+        ...v,
+        name: hyname
       })
-      requiredOpt.components.push(name)
-      requiredOpt.modal[name] = {}
+      requiredOpt.components.push(hyname)
+      requiredOpt.modal[hyname] = {}
     })
-    requiredOpt.currentView = opts.process[0].name
+    requiredOpt.currentView = requiredOpt.steps[0].name
     
     // 替换模板中必须有的参数
     for (let opt in requiredOpt) {
@@ -89,10 +138,7 @@ class Process extends Basic {
       }
     }
 
-    for (let opt in opts) {
-      data = data.replace(`#${opt}#`, opts[opt])
-    }
-    return data
+    return super.replaceAll(data, opts)
   }
 
   redirct ({ dest }) {
@@ -104,7 +150,8 @@ class Process extends Basic {
       const step = new Step(opt.name)
       step.parentDir = dest
       step.dest({
-        dest: opt.name
+        dest: opt.name,
+        ...opt
       })
     })
   }

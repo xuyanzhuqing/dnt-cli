@@ -8,7 +8,7 @@ const steps: any[] = #steps#
 const modal: any = #modal#
 
 @Component({
-  name: 'Processmaster',
+  name: '#dest#',
   components: {
     #components#
   }
@@ -27,6 +27,6 @@ export default class MasterModal extends process {
   @Provide('steps')
   steps = steps
 
-  public currentView = #currentView#
+  public currentView = '#currentView#'
 }
 </script>
