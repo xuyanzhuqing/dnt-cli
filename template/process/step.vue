@@ -27,7 +27,7 @@ export default class extends Vue {
   #next#
   #submit#
   public qaSubmit () {
-    /*dosome thing*/
+    /* dosome thing */
   }
   #submit#
 }

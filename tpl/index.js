@@ -3,7 +3,7 @@ const inquirer = require('inquirer')
 const { Transform } = require('stream')
 const Page = require('./page')
 const Process = require('./process')
-inquirer.registerPrompt("table", require('../inquirer-table-insert-prompt.js'))
+inquirer.registerPrompt("table", require('inquirer-table-insert-prompt'))
 
 class Tpl {
   constructor (...supported) {

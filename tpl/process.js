@@ -1,6 +1,6 @@
 const Basic = require('./basic')
 const { hyphens } = require('../utils')
-const { validator, required, IntRange, filename } = require('../validator')
+const { validator, required, IntRange, filename } = require('inquirer-table-insert-prompt/validator')
 
 class Step extends Basic {
   constructor (name, desc, note, prompt = []) {
@@ -54,7 +54,9 @@ class Process extends Basic {
           type: 'table',
           name: 'process',
           message: '请输入步骤配置信息',
-          columns: [],
+          columns: (answers) => {
+            return new Array(parseInt(answers.steps)).fill(null).map((v, i) => i + 1)
+          },
           rows: [
             {
               name: 'name',
