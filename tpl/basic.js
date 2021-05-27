@@ -2,13 +2,15 @@ const { Transform } = require('stream')
 const ProgressBar = require('progress')
 const Pipe = require('../bin/pipe.js')
 const chalk = require('chalk')
+const path = require('path')
+const fs = require('fs')
 
 class Basic {
   constructor (name, desc, note, prompt = []) {
     this.name = name
     this.desc = desc
     this.note = note
-    this.prompt = prompt
+    this.prompt = this.validatePrompt(prompt)
     this.isDir = name.startsWith('/')
   }
 
@@ -19,6 +21,39 @@ class Basic {
   get opt () {
     const { name, desc, note } = this
     return { name, desc, note }
+  }
+
+  // 验证文件是否存在
+  validatePrompt (prompt) {
+    const destIndex = prompt.findIndex(v => v.name === 'dest')
+    const me = this
+    if (destIndex > -1) {
+      const warningRepeat = {
+        name: '_warningRepeat',
+        type: 'input',
+        message: '检测到当前路径已经存在，是否覆盖 ' + chalk.gray('Yes/No'),
+        when: function (answers) {
+          const targetPath = path.join(process.cwd(), me.redirct({ dest: answers.dest }))
+          try {
+            const stat = fs.statSync(targetPath)
+            return stat.isDirectory() || stat.isFile()
+          } catch (err) {
+            return false
+          }
+        },
+        validate: function (input) {
+          const whiteList = ['yes', 'y']
+          const lowerCase = input.toLocaleLowerCase()
+          if (!whiteList.includes(lowerCase)) {
+            process.exit(0)
+          }
+          return true
+        }
+      }
+      prompt.splice(destIndex + 1, 0, warningRepeat)
+    }
+
+    return prompt
   }
 
   redirct ({ dest }) {
