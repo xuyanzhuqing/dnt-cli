@@ -9,6 +9,8 @@ import { Component, Prop, Inject, Vue } from 'vue-property-decorator'
 import formItem from '&/components/form/form-item/index.vue'
 import { DntFormItem } from '&/types/dnt-form-item'
 
+export const useModal = () => ({})
+
 @Component({
   name: '#name#',
   components: {

@@ -5,6 +5,8 @@
 <script lang="ts">
 import { Inject, Vue, Component, Prop } from 'vue-property-decorator'
 
+export const useModal = () => ({})
+
 @Component({
   name: '#name#'
 })

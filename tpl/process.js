@@ -117,13 +117,13 @@ class Process extends Basic {
     }
     opts.process.forEach(v => {
       const hyname = hyphens(v.name)
-      requiredOpt.import.push(`import ${hyname} from './step/${v.name}.vue'`)
+      requiredOpt.import.push(`import ${hyname}, { useModal as ${hyname}Modal } from './step/${v.name}.vue'`)
       requiredOpt.steps.push({
         ...v,
         name: hyname
       })
       requiredOpt.components.push(hyname)
-      requiredOpt.modal[hyname] = {}
+      requiredOpt.modal[hyname] = `${hyname}Modal()`
     })
     requiredOpt.currentView = requiredOpt.steps[0].name
     
@@ -138,8 +138,10 @@ class Process extends Basic {
             data = data.replace(`#${opt}#`, curr.join(', '))
           break
           case 'steps':
-          case 'modal':
             data = data.replace(`#${opt}#`, Process.formatJsonString(curr))
+            break
+          case 'modal':
+            data = data.replace(`#${opt}#`, Process.formatJsonString(curr).replace(/\'/g, ''))
             break
           default:
             data = data.replace(`#${opt}#`, curr)
