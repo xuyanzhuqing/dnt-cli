@@ -10,6 +10,7 @@ import formItem from '&/components/form/form-item/index.vue'
 import { DntFormItem } from '&/types/dnt-form-item'
 
 @Component({
+  name: '#name#',
   components: {
     formItem
   }
@@ -38,8 +39,20 @@ export default class extends Vue {
     return await (this.$refs as any).form.validate()
   }
 
-  public async qaNext () {
+  #preview#
+  public qaPreview () {
+    this.preview()
+  }
+  #preview#
+  #next#
+  public qaNext () {
     await this.isValid() && this.next()
   }
+  #next#
+  #submit#
+  public qaSubmit () {
+    /* dosome thing */
+  }
+  #submit#
 }
 </script>
