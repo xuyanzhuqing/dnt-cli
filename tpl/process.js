@@ -138,7 +138,7 @@ class Process extends Basic {
             data = data.replace(`#${opt}#`, curr.join(', '))
           break
           case 'steps':
-            data = data.replace(`#${opt}#`, Process.formatJsonString(curr))
+            data = data.replace(`#${opt}#`, Process.formatJsonString(curr.map(({ template, ...rest }) => rest)))
             break
           case 'modal':
             data = data.replace(`#${opt}#`, Process.formatJsonString(curr).replace(/\'/g, ''))
