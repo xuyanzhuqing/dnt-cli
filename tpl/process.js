@@ -1,6 +1,7 @@
 const Basic = require('./basic')
 const { hyphens } = require('../utils')
 const { validator, required, IntRange, filename } = require('inquirer-table-insert-prompt/validator')
+const Select = require('inquirer-table-insert-prompt').Select
 
 class Step extends Basic {
   constructor (name, desc, note, prompt = []) {
@@ -64,6 +65,11 @@ class Process extends Basic {
             },
             {
               name: 'title'
+            },
+            {
+              name: 'template',
+              type: new Select(['default', 'form']),
+              default: 'default'
             },
             {
               name: 'exit',
@@ -148,8 +154,16 @@ class Process extends Basic {
   }
 
   foke ({ process, dest }) {
+    const rows = this.prompt.find(v => v.name === 'process').rows || []
+    const tplOptions = rows.find(v => v.name === 'template').type.options || []
     process.forEach(opt => {
-      const step = new Step(opt.name)
+      const tplName = tplOptions[opt.template]
+      const step = new class extends Step {
+        get entry () {
+          return `process/${tplName}.vue`
+        }
+      }(opt.name)
+
       step.parentDir = dest
       step.dest({
         dest: opt.name,

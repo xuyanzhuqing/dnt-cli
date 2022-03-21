@@ -27,7 +27,7 @@
     "commander": "^7.2.0",
     "figures": "^3.2.0",
     "inquirer": "^8.0.0",
-    "inquirer-table-insert-prompt": "^1.1.0",
+    "inquirer-table-insert-prompt": "^1.2.1",
     "minimist": "^1.2.5",
     "progress": "^2.0.3",
     "rxjs": "^7.0.1",
